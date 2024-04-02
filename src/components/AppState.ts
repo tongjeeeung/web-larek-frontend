@@ -1,5 +1,5 @@
-import { ICard, IOrder } from "../../types";
-import { EventEmitter, IEvents } from './events';
+import { ICard, IOrder } from "../types";
+import { EventEmitter, IEvents } from './base/events';
 
 export type CatalogChangeEvent = {
   catalog: ICard[];

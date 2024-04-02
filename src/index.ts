@@ -4,13 +4,14 @@ import { ensureElement } from './utils/utils';
 import { API_URL, CDN_URL } from './utils/constants';
 import { ApiShop } from './components/ApiShop';
 import { EventEmitter } from './components/base/events';
-import { Page } from './components/base/Page';
-import { Card, IViewCard } from './components/base/Card';
-import { AppState } from './components/base/AppState';
-import { Popup } from './components/base/Popup';
-import { Basket } from './components/base/Basket';
-import { Form, IForm } from './components/base/Form';
-import { approvalOrderView } from './components/base/ApprovalOrderView';
+import { Page } from './components/Page';
+import { Card, IViewCard } from './components/Card';
+import { AppState } from './components/AppState';
+import { Popup } from './components/Popup';
+import { Basket } from './components/Basket';
+import { Form, IForm } from './components/Form';
+import { approvalOrderView } from './components/ApprovalOrderView';
+import { ICard } from './types';
 
 const cardCatalogTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -53,25 +54,51 @@ function handleOpenPopup(card: IViewCard) {
 }
 
 function handleOpenBasket() {
+  let totalPrice: number = 0;
   const basket = new Basket(basketTemplate, cardBasketTemplate);
   basket.on('basket:submit', handleOpenForm);
   const basketIdList = app.getBasket();
   const basketCardList = basketIdList.map(id => {
     const liCard = new Card(cardBasketTemplate);
     liCard.on('card:changed', handleDeliteCard);
+    totalPrice += app.getCurrentCard(id).price;
     return liCard.render(app.getCurrentCard(id))
   });
-  page.popupContainer = basket.render(basketCardList);
+  const orderObj = app.getOrder();
+  orderObj.items = app.getBasket();
+  orderObj.total = totalPrice;
+  page.popupContainer = basket.render(basketCardList, totalPrice);
   popup.open()
 }
 
-function handleOpenForm(item: {totalPrice: number}) {
-  const orderObj = app.getOrder();
-  orderObj.items = app.getBasket();
-  orderObj.total = item.totalPrice;
+function handleOpenForm() {
   const form = new Form(orderInfoTemplate)
   form.on('form:submit', handleOpenNextForm);
+  form.on('input:changed', validetionForms)
   page.popupContainer = form.render();
+}
+
+function validetionForms(form: IForm) {
+  if(!hasInvalidInput(form.inputElements) && cheackCashAndCardValid(form)) {
+    form.submitButton.removeAttribute('disabled');
+  }
+  else form.submitButton.setAttribute('disabled', '');
+}
+
+function hasInvalidInput(inputElements: HTMLInputElement[]) {
+  return inputElements.some(inputElement => {
+    return !inputElement.validity.valid;
+  })
+}
+
+function cheackCashAndCardValid(form: IForm) {
+  if(form.cardButton && form.cashButton) {
+    if(form.cardButton.classList.contains('button_alt-active') || form.cashButton.classList.contains('button_alt-active')) {
+      return true;
+    }
+    else return false;
+  }
+  else return true;
 }
 
 function handleOpenNextForm(formObj: IForm) {
@@ -81,6 +108,7 @@ function handleOpenNextForm(formObj: IForm) {
   app.setOrderInfo(orderObj)
   const form = new Form(orderFormTemplate);
   form.on('form:submit', handlePostOrder);
+  form.on('input:changed', validetionForms)
   page.popupContainer = form.render()
 }
 
@@ -110,7 +138,6 @@ function closePopup() {
 }
 
 function handleBuyPrew(card: IViewCard) {
-  // добавляем в корзину и перерисовываем
   handleAddDeliteCard(card);
   card.buyButtonView(app.getBasket().find(idCard => card.id === idCard))
 }
@@ -135,4 +162,10 @@ function renderCatalog() {
 }
 
 api.getCardsArr()
-  .then(appData => {app.setCatalog(appData)});
+  .then(appData => {
+    appData = appData.map((item: ICard) => ({
+      ...item,
+      image: CDN_URL + item.image
+    }))
+    app.setCatalog(appData)
+  });

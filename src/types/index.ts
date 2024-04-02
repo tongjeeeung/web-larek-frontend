@@ -26,12 +26,3 @@ export interface IOrder extends IOrderForm, IOrderInfo {
   items: string[];
   total: number;
 }
-
-export interface IBasketCards {
-  id: string;
-  total: number;
-}
-
-export interface IBasket {
-  cards: IBasketCards[];
-}

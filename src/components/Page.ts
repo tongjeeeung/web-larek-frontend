@@ -1,4 +1,4 @@
-import { EventEmitter, IEvents } from "./events";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IPage extends IEvents{
   catalogContainer:HTMLElement[];

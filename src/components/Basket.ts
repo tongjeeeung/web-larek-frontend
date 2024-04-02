@@ -1,7 +1,7 @@
-import { EventEmitter, IEvents } from "./events";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IViewBasket extends IEvents {
-  render:(basketList: HTMLElement[]) => HTMLElement;
+  render:(basketList: HTMLElement[], totalPrice: number) => HTMLElement;
 }
 
 export interface IViewBasketContainer {
@@ -18,7 +18,6 @@ export class Basket extends EventEmitter implements IViewBasket {
   protected modalButton: HTMLButtonElement;
   protected modalPrice: HTMLElement;
   protected modalList: HTMLUListElement;
-  protected totalPrice: number;
 
   constructor(protected templateBasket: HTMLTemplateElement, protected templateBasketElem: HTMLTemplateElement) {
     super();
@@ -33,22 +32,20 @@ export class Basket extends EventEmitter implements IViewBasket {
     this.elementIndex = this.listElement.querySelector('.basket__item-index');
 
     this.modalButton.addEventListener('click', () => {
-      this.emit('basket:submit', {totalPrice: this.totalPrice})
+      this.emit('basket:submit')
     })
   }
 
-  render(basketList: HTMLElement[]) {
-    this.totalPrice = 0;
+  render(basketList: HTMLElement[], totalPrice: number) {
     if(basketList.length != 0) {
     basketList.forEach(card => {
       card.querySelector('.basket__item-index').textContent = String(basketList.indexOf(card) + 1);
-      this.totalPrice += Number(card.querySelector('.card__price').textContent.split(' ')[0]);
       this.modalList.appendChild(card);
     })}
     else {
       this.modalButton.setAttribute('disabled', '')
     }
-    this.modalPrice.textContent = String(this.totalPrice) + ' синапсов';
+    this.modalPrice.textContent = String(totalPrice) + ' синапсов';
     return this.modalElement;
   }
 }

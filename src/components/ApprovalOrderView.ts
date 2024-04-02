@@ -1,4 +1,4 @@
-import { EventEmitter, IEvents } from "./events";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IApprovalOrderView extends IEvents {
   render(total: number): HTMLElement;

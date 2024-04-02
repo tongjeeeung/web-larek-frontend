@@ -18,18 +18,10 @@ export class ApiShop extends Api implements IApiShop {
 
   getCardsArr(): Promise<ICard[]> {
     return this.get('/product').then((data: ApiListResponse<ICard>) => 
-      data.items.map((item) => ({
-        ...item,
-        image: this.cdn + item.image
-      }))
-    )
-  }
+      data.items.map((item) => ({...item})))}
 
   getCardItem(id:string): Promise<ICard> {
-    return this.get(`/product/${id}`).then((item: ICard) => ({
-      ...item,
-      image: this.cdn + item.image
-    }))
+    return this.get(`/product/${id}`).then((item: ICard) => ({...item}))
   }
 
   postCard(order: IOrder): Promise<IOrderResult> {

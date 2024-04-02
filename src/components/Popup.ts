@@ -1,4 +1,4 @@
-import { EventEmitter, IEvents } from "./events";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IPopup extends IEvents {
   content: HTMLElement;

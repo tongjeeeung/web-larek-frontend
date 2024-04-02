@@ -1,5 +1,5 @@
-import { ICard } from "../../types";
-import { EventEmitter, IEvents } from "./events";
+import { ICard } from "../types";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IViewCard extends IEvents {
   id: string;
@@ -44,7 +44,9 @@ export class Card extends EventEmitter implements IViewCard {
     this.buttonInCard = this.cardElement.querySelector('.button');
     this.indexBasketCard = this.cardElement.querySelector('.basket__item-index');
 
-    this.cardButton.addEventListener('click', () => this.emit('card:open', (this)))
+    if(this.cardButton) {
+      this.cardButton.addEventListener('click', () => this.emit('card:open', (this)))
+    }
     
     if(this.buttonInCard === null) {
       this.buttonInCard = this.cardElement.querySelector('.basket__item-delete');

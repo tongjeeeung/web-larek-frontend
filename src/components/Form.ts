@@ -1,19 +1,22 @@
-import { EventEmitter, IEvents } from "./events";
+import { EventEmitter, IEvents } from "./base/events";
 
 export interface IForm extends IEvents {
   render(): void;
   getOrderFromForm(): {[key: string]: string};
   setOrderFromForm(name: string, value: string): void;
   clearValue(): void;
+  inputElements: HTMLInputElement[];
+  submitButton: HTMLButtonElement;
+  cashButton: HTMLButtonElement;
+  cardButton: HTMLButtonElement;
 }
 
 export class Form extends EventEmitter implements IForm {
   protected formElemet: HTMLFormElement;
-  protected inputElements: HTMLInputElement[];
-  protected cashButton: HTMLButtonElement;
-  protected cardButton: HTMLButtonElement;
-  protected handleFormSumbit: Function
-  protected submitButton: HTMLButtonElement;
+  inputElements: HTMLInputElement[];
+  cashButton: HTMLButtonElement;
+  cardButton: HTMLButtonElement;
+  submitButton: HTMLButtonElement;
   protected order: {[key: string]: string} = {};
 
   constructor(formElement: HTMLFormElement) {
@@ -36,8 +39,7 @@ export class Form extends EventEmitter implements IForm {
 
     this.inputElements.forEach(input => {
       input.addEventListener('input', () => {
-        this.cheackInputValidation(input);
-        this.toggleButton()
+        this.emit('input:changed', (this));
       })
     })
 
@@ -60,45 +62,13 @@ export class Form extends EventEmitter implements IForm {
     })
   }
 
-  protected hasInvalidInput() {
-    return this.inputElements.some(inputElement => {
-      return !inputElement.validity.valid;
-    })
-  }
-
-  protected toggleButton() {
-    if(!this.hasInvalidInput() && this.cheackCashAndCardValid()) {
-      this.submitButton.removeAttribute('disabled');
-    }
-    else this.submitButton.setAttribute('disabled', '');
-  }
-
-  protected cheackCashAndCardValid() {
-    if(this.cardButton && this.cashButton) {
-      if(this.cardButton.classList.contains('button_alt-active') || this.cashButton.classList.contains('button_alt-active')) {
-        return true;
-      }
-      else return false;
-    }
-    else return true;
-  }
-
-  protected cheackInputValidation(input: HTMLInputElement) {
-    if(!input.validity.valid) {
-      //показываем ошибку;
-    }
-    else {
-      //скрываем ошибку
-    }
-  }
-
   protected setForce(button: HTMLButtonElement) {
     button.classList.toggle("button_alt-active");
     if(button === this.cardButton) {
       this.cashButton.classList.remove("button_alt-active")
     }
     else this.cardButton.classList.remove("button_alt-active")
-    this.toggleButton()
+    this.emit('input:changed', (this));
   }
 
   render(){
